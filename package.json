@@ -1,7 +1,11 @@
 {
-  "name": "ReactNativeAnimations",
-  "version": "0.0.1",
-  "private": true,
+  "name": "react-native-animations",
+  "description": "An example project for most common react native animations",
+  "repository": "https://github.com/tufanlodos/react-native-animations",
+  "author": "Mert C. OZDIN",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": false,
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
