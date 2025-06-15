@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -9,6 +9,7 @@ import {
   useColorScheme,
   StatusBar,
   Pressable,
+  Modal,
   Linking,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -38,33 +39,7 @@ import InterpolateTranslatePositionOpacity from './examples/InterpolateTranslate
 import InterpolateColorBackgroundColor from './examples/InterpolateColorBackgroundColor';
 import InterpolateRotation from './examples/InterpolateRotation';
 import ExtrapolateScale from './examples/ExtrapolateScale';
-
-type ThemeColors = {
-  background: string;
-  scrollBackground: string;
-  text: string;
-  subText: string;
-  border: string;
-};
-
-const AppTheme: {
-  [theme: string]: ThemeColors;
-} = {
-  light: {
-    background: Colors.white,
-    scrollBackground: Colors.lighter,
-    text: Colors.black,
-    subText: Colors.dark,
-    border: Colors.light,
-  },
-  dark: {
-    background: '#121212',
-    scrollBackground: '#121212',
-    text: Colors.white,
-    subText: '#e0e0e0',
-    border: '#333333',
-  },
-};
+import {InfoData, ThemeColors} from './types';
 
 const DETAILS = {
   0: 'Timing: Opacity',
@@ -97,169 +72,251 @@ const DETAILS = {
 
 const App = () => {
   const [showDetail, setShowDetail] = useState<string | null>(null);
-  const isDarkMode = useColorScheme() === 'dark';
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [infoLoading, setInfoLoading] = useState(true);
+  const [infoData, setInfoData] = useState<InfoData | null>(null);
 
-  // Get current theme colors based on dark mode state
+  const isDarkMode = useColorScheme() === 'dark';
   const themeColors = isDarkMode ? AppTheme.dark : AppTheme.light;
   const styles = getStyles(themeColors);
+
+  useEffect(() => {
+    (async () => {
+      setInfoLoading(true);
+      try {
+        const response = await fetch(
+          'https://tufanlodos.github.io/react-native-animations/info.json',
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setInfoData(data);
+        } else {
+          console.error('Failed to fetch intro data:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching intro data:', error);
+      } finally {
+        setInfoLoading(false);
+      }
+    })();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       {showDetail === null ? (
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <View style={styles.header}>
+            <Text style={styles.title}>React Native Animations</Text>
+            {!infoLoading && (
+              <Pressable onPress={() => setShowInfoModal(true)}>
+                <Text>ℹ️</Text>
+              </Pressable>
+            )}
+            <Modal visible={showInfoModal} transparent={true}>
+              <View style={styles.modalOverlay}>
+                {infoData ? (
+                  <View style={styles.modalBody}>
+                    {infoData.title && (
+                      <Text style={styles.title}>{infoData.title}</Text>
+                    )}
+                    {infoData.description && (
+                      <Text style={styles.subtitle}>
+                        {infoData.description}
+                      </Text>
+                    )}
+                    {infoData.websiteURL && (
+                      <Text style={styles.text}>
+                        Visit{' '}
+                        <Text
+                          style={styles.link}
+                          onPress={() => Linking.openURL(infoData.websiteURL)}>
+                          the website
+                        </Text>{' '}
+                        for more information.
+                      </Text>
+                    )}
+                    {infoData.repositoryURL && (
+                      <Text style={styles.text}>
+                        Check out the{' '}
+                        <Text
+                          style={styles.link}
+                          onPress={() =>
+                            Linking.openURL(infoData.repositoryURL)
+                          }>
+                          repository
+                        </Text>{' '}
+                        for source code.
+                      </Text>
+                    )}
+                    {infoData.email && (
+                      <Text style={styles.text}>
+                        Contact:{' '}
+                        <Text
+                          style={styles.link}
+                          onPress={() =>
+                            Linking.openURL(`mailto:${infoData.email}`)
+                          }>
+                          {infoData.email}
+                        </Text>
+                      </Text>
+                    )}
+                    <Button
+                      title="Close"
+                      onPress={() => setShowInfoModal(false)}
+                    />
+                  </View>
+                ) : (
+                  <View style={styles.modalBody}>
+                    <Text style={styles.text}>
+                      Visit{' '}
+                      <Text
+                        style={styles.link}
+                        onPress={() =>
+                          Linking.openURL(
+                            'https://tufanlodos.github.io/react-native-animations/',
+                          )
+                        }>
+                        the website
+                      </Text>{' '}
+                      to learn more about this project.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </Modal>
+          </View>
           <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.title}>
-                For the developers, by a developer!
-              </Text>
-              <Text style={styles.subtitle}>
-                Common animations in React Native along with{' '}
-                <Text
-                  style={styles.link}
-                  onPress={() =>
-                    Linking.openURL(
-                      'https://github.com/tufanlodos/react-native-animations',
-                    )
-                  }>
-                  their code
-                </Text>
-                . No additional packages are used—only the core features of
-                React Native. Enjoy!
-              </Text>
-              <Button
-                title={DETAILS[0]}
-                onPress={() => setShowDetail(DETAILS[0])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[1]}
-                onPress={() => setShowDetail(DETAILS[1])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[2]}
-                onPress={() => setShowDetail(DETAILS[2])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[3]}
-                onPress={() => setShowDetail(DETAILS[3])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[4]}
-                onPress={() => setShowDetail(DETAILS[4])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[5]}
-                onPress={() => setShowDetail(DETAILS[5])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[6]}
-                onPress={() => setShowDetail(DETAILS[6])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[7]}
-                onPress={() => setShowDetail(DETAILS[7])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[8]}
-                onPress={() => setShowDetail(DETAILS[8])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[9]}
-                onPress={() => setShowDetail(DETAILS[9])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[10]}
-                onPress={() => setShowDetail(DETAILS[10])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[11]}
-                onPress={() => setShowDetail(DETAILS[11])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[12]}
-                onPress={() => setShowDetail(DETAILS[12])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[13]}
-                onPress={() => setShowDetail(DETAILS[13])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[14]}
-                onPress={() => setShowDetail(DETAILS[14])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[15]}
-                onPress={() => setShowDetail(DETAILS[15])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[16]}
-                onPress={() => setShowDetail(DETAILS[16])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[17]}
-                onPress={() => setShowDetail(DETAILS[17])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[18]}
-                onPress={() => setShowDetail(DETAILS[18])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[19]}
-                onPress={() => setShowDetail(DETAILS[19])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[20]}
-                onPress={() => setShowDetail(DETAILS[20])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[21]}
-                onPress={() => setShowDetail(DETAILS[21])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[22]}
-                onPress={() => setShowDetail(DETAILS[22])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[23]}
-                onPress={() => setShowDetail(DETAILS[23])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[24]}
-                onPress={() => setShowDetail(DETAILS[24])}
-              />
-              <View style={styles.spacer} />
-              <Button
-                title={DETAILS[25]}
-                onPress={() => setShowDetail(DETAILS[25])}
-              />
-              <View style={styles.spacer} />
-            </View>
+            <Button
+              title={DETAILS[0]}
+              onPress={() => setShowDetail(DETAILS[0])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[1]}
+              onPress={() => setShowDetail(DETAILS[1])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[2]}
+              onPress={() => setShowDetail(DETAILS[2])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[3]}
+              onPress={() => setShowDetail(DETAILS[3])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[4]}
+              onPress={() => setShowDetail(DETAILS[4])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[5]}
+              onPress={() => setShowDetail(DETAILS[5])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[6]}
+              onPress={() => setShowDetail(DETAILS[6])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[7]}
+              onPress={() => setShowDetail(DETAILS[7])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[8]}
+              onPress={() => setShowDetail(DETAILS[8])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[9]}
+              onPress={() => setShowDetail(DETAILS[9])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[10]}
+              onPress={() => setShowDetail(DETAILS[10])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[11]}
+              onPress={() => setShowDetail(DETAILS[11])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[12]}
+              onPress={() => setShowDetail(DETAILS[12])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[13]}
+              onPress={() => setShowDetail(DETAILS[13])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[14]}
+              onPress={() => setShowDetail(DETAILS[14])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[15]}
+              onPress={() => setShowDetail(DETAILS[15])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[16]}
+              onPress={() => setShowDetail(DETAILS[16])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[17]}
+              onPress={() => setShowDetail(DETAILS[17])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[18]}
+              onPress={() => setShowDetail(DETAILS[18])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[19]}
+              onPress={() => setShowDetail(DETAILS[19])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[20]}
+              onPress={() => setShowDetail(DETAILS[20])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[21]}
+              onPress={() => setShowDetail(DETAILS[21])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[22]}
+              onPress={() => setShowDetail(DETAILS[22])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[23]}
+              onPress={() => setShowDetail(DETAILS[23])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[24]}
+              onPress={() => setShowDetail(DETAILS[24])}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title={DETAILS[25]}
+              onPress={() => setShowDetail(DETAILS[25])}
+            />
+            <View style={styles.spacer} />
           </View>
         </ScrollView>
       ) : (
@@ -335,6 +392,23 @@ const App = () => {
   );
 };
 
+const AppTheme: {
+  [theme: string]: ThemeColors;
+} = {
+  light: {
+    background: Colors.white,
+    text: Colors.black,
+    subText: Colors.dark,
+    border: Colors.light,
+  },
+  dark: {
+    background: '#121212',
+    text: Colors.white,
+    subText: '#e0e0e0',
+    border: '#333333',
+  },
+};
+
 const getStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
     f1: {
@@ -348,14 +422,25 @@ const getStyles = (themeColors: ThemeColors) =>
       backgroundColor: themeColors.background,
       paddingTop: StatusBar.currentHeight || 0,
     },
-    scrollView: {
-      backgroundColor: themeColors.scrollBackground,
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalBody: {
+      flex: 0,
+      backgroundColor: themeColors.background,
+      padding: 20,
+      gap: 10,
     },
     body: {
-      backgroundColor: themeColors.background,
-    },
-    sectionContainer: {
-      marginTop: 32,
       paddingHorizontal: 24,
     },
     title: {
@@ -370,6 +455,9 @@ const getStyles = (themeColors: ThemeColors) =>
       textAlign: 'center',
       marginBottom: 16,
       color: themeColors.subText,
+    },
+    text: {
+      color: themeColors.text,
     },
     link: {
       textDecorationLine: 'underline',
