@@ -1,8 +1,14 @@
 # React Native Animations
 
-- An example project showcasing the most common React Native animations.
-- Code available at: https://github.com/tufanlodos/react-native-animations
-- Contact: m12napps@gmail.com
+An example project showcasing the most common React Native animations.
+
+## Repository
+
+🔗 [GitHub Repository](https://github.com/tufanlodos/react-native-animations)
+
+## Contact
+
+📧 [m12napps@gmail.com](mailto:m12napps@gmail.com)
 
 # Getting Started
 
