@@ -2,17 +2,20 @@
 
 An example project showcasing the most common React Native animations.
 
+## Download the App
+
+[![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/us/app/react-native-animations/id6747341538)
+
+Android version coming soon!
+
 ## Repository
 
 🔗 [GitHub Repository](https://github.com/tufanlodos/react-native-animations)
 
-## Contact
+<details>
+<summary><h3 style="display: inline-block">Installation</h3></summary>
 
-📧 [m12napps@gmail.com](mailto:m12napps@gmail.com)
-
-# Getting Started
-
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+> **Note**: Make sure you have completed the React Native [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
 ## Step 1: Start Metro
 
@@ -71,3 +74,13 @@ yarn ios
 If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
 
 This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+
+</details>
+
+### Repository Structure
+
+- The application entry point is the **index.js** file, which renders the **App.tsx** component. All animation examples displayed in the app can be found in the **examples** folder with their corresponding names.
+
+## Contact
+
+📧 [m12napps@gmail.com](mailto:m12napps@gmail.com)
